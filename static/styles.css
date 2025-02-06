@@ -1,0 +1,182 @@
+/* General body styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* General container styling */
+.container, .response-container, .error-container {
+    background: white;
+    padding: 100px;
+    border-radius: 16px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 100%;
+    max-width: 600px;
+    margin: 40px auto;
+}
+
+/* Index-specific container */
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Response-specific container */
+.response-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Error-specific container */
+.error-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Header styling */
+h1 {
+    font-size: 36px;
+    margin-bottom: 30px;
+}
+
+/* Label and paragraph text */
+label, p, .question, .answer {
+    font-size: 22px;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+}
+
+/* Text-specific adjustments for response page */
+.question strong, .answer strong {
+    font-weight: bold;
+    color: #000;
+}
+
+/* Input field styling */
+input {
+    width: 100%;
+    padding: 18px;
+    font-size: 18px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Buttons */
+button, .feedback-button, .back-button {
+    padding: 18px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover, .feedback-button:hover, .back-button:hover {
+    background-color: #0056b3;
+}
+
+.feedback-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.back-button {
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+}
+
+.back-button:hover {
+    background-color: #218838;
+}
+
+/* Source link styling */
+.source {
+    margin: 20px 0;
+    font-size: 18px;
+    color: #444;
+}
+
+.source a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.source a:hover {
+    color: #0056b3;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .container, .response-container, .error-container {
+        padding: 30px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    label, p, .question, .answer {
+        font-size: 20px;
+    }
+
+    input {
+        padding: 16px;
+        font-size: 16px;
+    }
+
+    button, .feedback-button, .back-button {
+        padding: 16px 20px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container, .response-container, .error-container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    label, p, .question, .answer {
+        font-size: 18px;
+    }
+
+    input {
+        padding: 14px;
+        font-size: 14px;
+    }
+
+    button, .feedback-button, .back-button {
+        padding: 14px 18px;
+        font-size: 14px;
+    }
+}

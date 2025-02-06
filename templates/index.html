@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highrise Chatbot</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Highrise Chatbot says hello!</h1>
+        <form id="search-form">
+            <label for="question">Ask any question and I will try and answer:</label>
+            <input type="text" id="question" name="question" placeholder="Type your question here..." required>
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById("search-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const question = document.getElementById("question").value;
+
+            fetch("/search", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ question }),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert("Error: Could not find an answer.");
+                }
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                alert("An error occurred. Please try again.");
+            });
+        });
+    </script>
+</body>
+</html>

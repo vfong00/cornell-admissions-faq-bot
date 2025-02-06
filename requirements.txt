@@ -1,0 +1,6 @@
+flask
+huggingface_hub
+numpy
+pandas
+python-dotenv
+werkzeug

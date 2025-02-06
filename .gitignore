@@ -1,0 +1,7 @@
+.vercel
+.venv/
+__pycache__
+.DS_Store
+.env
+faq_processed.json
+faq_raw.json

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ Bot Response</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="response-container">
+        <div class="response-header">
+            <h1>Highrise Chatbot says...</h1>
+        </div>
+        <div class="question">
+            <strong>Your question:</strong> {{ query }}
+        </div>
+        <div class="answer">
+            <strong>My answer:</strong> {{ answer }}
+        </div>
+
+        <div class="source">
+            <strong>Source:</strong> 
+            <a href="{{ source_url }}" target="_blank" rel="noopener noreferrer">
+                Read the full article here.
+            </a>
+        </div>
+
+        <div class="feedback-buttons">
+            <button class="feedback-button" onclick="sendFeedback('good')">👍 Good Response</button>
+            <button class="feedback-button" onclick="sendFeedback('bad')">👎 Bad Response</button>
+        </div>
+
+        <a href="/" class="back-button">Ask another question!</a>
+    </div>
+
+    <script>
+        function sendFeedback(feedbackType) {
+            fetch('/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    query: "{{ query }}",
+                    answer: "{{ answer }}",
+                    feedback: feedbackType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while sending feedback.');
+            });
+        }
+    </script>
+</body>
+</html>
