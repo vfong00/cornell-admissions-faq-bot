@@ -1,4 +1,6 @@
-# cornell-admissions-faq-bot
+# highrise-faq-bot
+
+How to use: go to [this link]() and simply interact!
 
 How the model was created:
 1. Scraped and preprocessed the data, isolating question/answer pairs present in the data.
@@ -10,4 +12,4 @@ The main design choice I made was choosing a threshold to determine what was a r
 
 Optional features included (and how I would expand upon this further):
 1. Basic NLP techniques: semantics are considered already, but I would probably do some kind of keyword extraction on top of what I already have.
-2. User feedback: currently the user can rate generated responses, we can probably improve on the log storage.git add 
+2. User feedback: currently the user can rate generated responses, we can probably improve on the log storage.
