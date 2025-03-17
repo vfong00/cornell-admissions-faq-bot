@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from http.server import BaseHTTPRequestHandler
 from werkzeug.serving import run_simple
-import logging
 from dotenv import load_dotenv
 import os
 
@@ -9,6 +8,9 @@ import pandas as pd
 import numpy as np
 from huggingface_hub import InferenceClient
 
+import sqlite3
+
+# anything below this is too dissimilar to be posted as a result 
 SIMILARITY_THRESHOLD = 0.5
 
 load_dotenv()
@@ -16,15 +18,30 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 wsgi_app = app
 api_key = os.getenv("API_KEY")
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler()
-    ]
-)
+def get_db_connection():
+    return sqlite3.connect("logs.db")
 
-logger = logging.getLogger(__name__)
+def log_to_db(level, event):
+    print(f"[{level}] {event}")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Create table if it doesn't exist
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            level TEXT,
+            event TEXT
+        )
+    """)
+
+    # Insert the log entry
+    cursor.execute("INSERT INTO logs (level, event) VALUES (?, ?)", (level, event))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 # Read in embeddings, metadata, start HuggingFace API
 df = pd.read_pickle("faq_with_embeddings.pkl")
@@ -34,34 +51,12 @@ client = InferenceClient(token=api_key)
 @app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
-
-@app.route("/couldnot", methods=["GET"])
-def couldnot():
-    return render_template("couldnot.html")
-
-@app.route("/response", methods=["GET"])
-def response():
-    query = request.args.get("query", "No query provided")
-    answer = request.args.get("answer", "No answer available")
-    source_url = request.args.get("source_url", "No url provides")
-    return render_template("response.html", query=query, answer=answer, source_url=source_url)
-
-@app.route("/feedback", methods=["POST"])
-def feedback():
-    data = request.json
-    if not data or "query" not in data or "answer" not in data or "feedback" not in data:
-        return jsonify({"error": "Invalid feedback data"}), 400
-    query = data["query"]
-    answer = data["answer"]
-    feedback = data["feedback"]
-
-    logger.info(f"FEEDBACK - Query: {query}, Answer: {answer}, Feedback: {feedback}")
-    return jsonify({"message": "Feedback recorded. Thank you!"})
     
 @app.route("/search", methods=["POST"])
 def semantic_search():
     data = request.json
     if not data or "question" not in data:
+        log_to_db("WARNING", f"QUERY ERROR - Missing 'question' in request body")
         return jsonify({"error": "Missing 'question' in request body"}), 400
     query = data["question"]
     
@@ -88,10 +83,8 @@ def semantic_search():
                 {"role": "user", "content": prompt}
             ]
         else:
-            logger.info(f"USER QUERY ERROR - model's similarity score too low to be deemed useful")
-            return jsonify({
-                "redirect_url": f"/couldnot?"
-            })
+            log_to_db("WARNING", f"QUERY ERROR - No relevant results found for: '{query}' (Similarity too low)")
+            return jsonify({"error": "I'm not confident in an answer for that query."})
 
         completion = client.chat.completions.create(
             model="Qwen/Qwen2.5-72B-Instruct", 
@@ -99,14 +92,29 @@ def semantic_search():
             max_tokens=1024
         )
         answer = completion.choices[0].message.content
-        logger.info(f"USER QUERY - Query: {query}, Response: {answer}")
-        return {
-            "Answer": answer,
-            "redirect_url": f"/response?query={query}&answer={answer}&source_url={url}"
-        }
+
+        log_to_db("INFO", f"USER QUERY - Query: '{query}'")
+        log_to_db("INFO", f"MODEL RESPONSE - Answer: '{answer[:100]}...'")
+
+        return jsonify({"query": query, "answer": answer, "source_url": url})
             
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        log_to_db("ERROR", f"SERVER ERROR - {str(e)}")
+        return jsonify({"error": "An internal error occurred"}), 500
+    
+@app.route("/log_feedback", methods=["POST"])
+def log_feedback():
+    data = request.json
+    if not data or "query" not in data or "answer" not in data or "feedback" not in data:
+        log_to_db("WARNING", f"FEEDBACK ERROR - Invalid feedback data received")
+        return jsonify({"error": "Invalid feedback data"}), 400
+    
+    query = data["query"]
+    answer = data["answer"]
+    feedback = data["feedback"]
+
+    log_to_db("INFO", f"USER FEEDBACK - Query: '{query}', Answer: '{answer[:100]}...', Feedback: {feedback}")
+    return jsonify({"message": "Feedback recorded. Thank you!"})
 
 class VercelHandler(BaseHTTPRequestHandler):
     def do_GET(self):

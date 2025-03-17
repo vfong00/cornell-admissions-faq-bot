@@ -7,37 +7,13 @@
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Ezrabot says hello!</h1>
-        <form id="search-form">
-            <label for="question">Ask any question related to Cornell University and its admissions and I will try and answer:</label>
-            <input type="text" id="question" name="question" placeholder="Type your question here..." required>
-            <button type="submit">Search</button>
-        </form>
+    <div class="chat-container">
+        <div id="chat-box"></div>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Ask any question!" />
+            <button id="send-btn">➤</button>
+        </div>
     </div>
-    <script>
-        document.getElementById("search-form").addEventListener("submit", (e) => {
-            e.preventDefault();
-            const question = document.getElementById("question").value;
-
-            fetch("/search", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question }),
-            })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.redirect_url) {
-                    window.location.href = data.redirect_url;
-                } else {
-                    alert("Error: Could not find an answer.");
-                }
-            })
-            .catch((error) => {
-                console.error("Error:", error);
-                alert("An error occurred. Please try again.");
-            });
-        });
-    </script>
+    <script src="/static/script.js"></script>
 </body>
 </html>
