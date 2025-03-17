@@ -47,8 +47,8 @@ def log_to_db(level, event):
     conn.close()
 
 # Read in embeddings, metadata, start HuggingFace API
-df = pd.read_pickle("faq_with_embeddings.pkl")
-cosines = np.load("embeddings.npy")
+df = pd.read_pickle("data/faq_with_embeddings.pkl")
+cosines = np.load("data/embeddings.npy")
 client = InferenceClient(token=api_key)
 
 @app.route("/", methods=["GET"])
