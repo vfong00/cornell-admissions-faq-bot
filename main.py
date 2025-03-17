@@ -21,7 +21,8 @@ greetings = ["hello", "hi", "hey", "good morning", "good evening"]
 farewells = ["bye", "goodbye", "see you", "have a nice day"]
 
 def get_db_connection():
-    return sqlite3.connect("logs.db")
+    db_path = "/tmp/logs.db"
+    return sqlite3.connect(db_path)
 
 def log_to_db(level, event):
     print(f"[{level}] {event}")
