@@ -1,6 +1,6 @@
 # cornell-admissions-faq-bot
 
-How to use: go to [this link](cornell-faq-bot-git-main-vincent-fongs-projects.vercel.app) and simply interact!
+How to use: go to [this link](https://cornell-faq-bot-git-main-vincent-fongs-projects.vercel.app) and simply interact!
 
 IMPORTANT NOTE: The model is reliant on [Qwen2.5-VL](https://huggingface.co/Qwen/Qwen2.5-VL-72B-Instruct), so the website may return an error for being overloaded from time to time. This should be temporary, interact with it at a different time.
 
