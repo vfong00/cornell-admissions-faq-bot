@@ -1,5 +1,18 @@
 document.getElementById("send-btn").addEventListener("click", sendMessage);
 
+document.getElementById("user-input").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
+    }
+});
+
+window.onload = function () {
+    setTimeout(() => {
+        addMessage("Hello! How can I help you today?", "bot");
+    }, 1000);
+};
+
 function sendMessage() {
     let inputField = document.getElementById("user-input");
     let message = inputField.value.trim();
@@ -14,9 +27,9 @@ function sendMessage() {
     .then(response => response.json())
     .then(data => {
         if (data.answer) {
-            addMessage(data.answer, "bot");
+            addMessage(data.answer, "bot", message);
         } else {
-            addMessage("Sorry, I don't have a good answer to this question. Please try rephrasing it or consulting <a href='https://faq.enrollment.cornell.edu' target='_blank'>this link</a> for more help.", "bot");
+            addMessage("Sorry, I don't have a good answer to this question. Please try rephrasing it or consulting <a href='https://faq.enrollment.cornell.edu' target='_blank'>our page</a> for more help.", "bot");
         }
     })
     .catch(error => {
@@ -30,7 +43,7 @@ function sendMessage() {
 function addMessage(text, sender, query = "") {
     let chatBox = document.getElementById("chat-box");
     let messageDiv = document.createElement("div");
-    messageDiv.classList.add("chat-message", sender);
+    messageDiv.classList.add("chat-message", sender, "fade-in");
     messageDiv.innerHTML = text;
 
     chatBox.appendChild(messageDiv);
@@ -40,19 +53,19 @@ function addMessage(text, sender, query = "") {
         feedbackDiv.classList.add("feedback-buttons");
 
         let thumbsUp = document.createElement("button");
-        thumbsUp.innerHTML = "👍";
-        thumbsUp.onclick = () => sendFeedback(query, text, "up");
+        thumbsUp.innerHTML = "🔺";
+        thumbsUp.onclick = () => sendFeedback(query, text, 1);
 
         let thumbsDown = document.createElement("button");
-        thumbsDown.innerHTML = "👎";
-        thumbsDown.onclick = () => sendFeedback(query, text, "down");
+        thumbsDown.innerHTML = "🔻";
+        thumbsDown.onclick = () => sendFeedback(query, text, 0);
 
         feedbackDiv.appendChild(thumbsUp);
         feedbackDiv.appendChild(thumbsDown);
         messageDiv.appendChild(feedbackDiv);
     }
 
-    chatBox.scrollTop = chatBox.scrollHeight;
+    chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: "smooth" });
 }
 
 function sendFeedback(query, answer, feedbackType) {

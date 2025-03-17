@@ -17,6 +17,8 @@ load_dotenv()
 app = Flask(__name__, static_folder="static", template_folder="templates")
 wsgi_app = app
 api_key = os.getenv("API_KEY")
+greetings = ["hello", "hi", "hey", "good morning", "good evening"]
+farewells = ["bye", "goodbye", "see you", "have a nice day"]
 
 def get_db_connection():
     return sqlite3.connect("logs.db")
@@ -70,7 +72,7 @@ def semantic_search():
             url = df.loc[match_idxs[0], "Source"]
             prompt = ", ".join(["[GENERATED ANSWER] " + df.loc[idx, "Answer"] for idx in match_idxs])
             messages = [
-                {"role": "system", "content": "You are helping a retrieval system in providing correct answers to the FAQ section for Cornell University's general admissions website. You are given two possible answers, and you should choose and summarize the best one. Do not add filler besides your summary."},
+                {"role": "system", "content": "You are helping a retrieval system in providing correct answers to the FAQ section for Cornell University's general admissions website. You are given two possible answers, and you should summarize the relevant information from them. Do not add filler besides your summary - format the answer as if it were your own."},
                 {"role": "user", "content": prompt}
             ]
         elif sims_above_threshold == 1:
@@ -79,12 +81,21 @@ def semantic_search():
             url = df.loc[match_idx, "Source"]
             prompt = df.loc[match_idx, "Answer"]
             messages = [
-                {"role": "system", "content": "You are helping a retrieval system in providing correct answers to the FAQ section for Cornell University's general admissions website. You are given an answer that you should summarize. Do not add filler besides your summary."},
+                {"role": "system", "content": "You are helping a retrieval system in providing correct answers to the FAQ section for Cornell University's general admissions website. You are given an answer that you should summarize the relevant information from. Do not add filler besides your summary - format the answer as if it were your own."},
                 {"role": "user", "content": prompt}
             ]
         else:
-            log_to_db("WARNING", f"QUERY ERROR - No relevant results found for: '{query}' (Similarity too low)")
-            return jsonify({"error": "I'm not confident in an answer for that query."})
+            if any(word.strip() in query.lower() for word in greetings):
+                log_to_db("INFO", f"USER CONVERSATIONAL - '{query}'")
+                return jsonify({"query": query, "answer": "Hello! How can I help you today?"})
+
+            elif any(word in query.lower() for word in farewells):
+                log_to_db("INFO", f"USER CONVERSATIONAL - '{query}'")
+                return jsonify({"query": query, "answer": "Goodbye! Have a great day!"})
+            
+            else:
+                log_to_db("WARNING", f"QUERY ERROR - No relevant results found for: '{query}' (Similarity too low)")
+            return jsonify({"error": "no relevant answer"})
 
         completion = client.chat.completions.create(
             model="Qwen/Qwen2.5-72B-Instruct", 
@@ -96,11 +107,11 @@ def semantic_search():
         log_to_db("INFO", f"USER QUERY - Query: '{query}'")
         log_to_db("INFO", f"MODEL RESPONSE - Answer: '{answer[:100]}...'")
 
-        return jsonify({"query": query, "answer": answer, "source_url": url})
+        return jsonify({"query": query, "answer": answer})
             
     except Exception as e:
         log_to_db("ERROR", f"SERVER ERROR - {str(e)}")
-        return jsonify({"error": "An internal error occurred"}), 500
+        return jsonify({"error": "An internal error occurred."}), 500
     
 @app.route("/log_feedback", methods=["POST"])
 def log_feedback():
